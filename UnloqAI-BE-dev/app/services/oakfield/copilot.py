@@ -35,7 +35,7 @@ _INTENT_MAP = {
 }
 
 
-class OakfieldCopilotService:
+class CopilotService:
     def __init__(self, db: Session):
         self.db = db
         self.tools = OakfieldTools(db)

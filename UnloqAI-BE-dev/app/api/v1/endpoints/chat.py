@@ -8,7 +8,7 @@ import uuid
 
 from app.db.session import get_db
 from app.models.meridian import ChatSession, ChatMessage
-from app.services.meridian.copilot import CopilotService
+from app.services.oakfield.copilot import CopilotService
 
 router = APIRouter()
 

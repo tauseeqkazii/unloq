@@ -7,11 +7,33 @@ import uuid
 from datetime import datetime
 
 from app.db.session import get_db
-from app.services.meridian.seed_meridian import seed_meridian_story
-from app.models.meridian import StrategyKPI, ExternalSignal, StrategyRecommendation, ImpactLedgerStrategy, StrategyOS, ChatMessage
-from app.services.meridian.copilot import CopilotService
-from app.schemas.meridian import KPIResponse, SignalResponse, RecommendationResponse, LedgerEntryResponse, ChartDataPoint
-from app.services.meridian.dashboard import DashboardService
+
+# Correct — seed_meridian lives under services/oakfield
+from app.services.oakfield.seed_meridian import seed_meridian_story
+
+# These are fine (models exist in models/)
+from app.models.meridian import (
+    StrategyKPI,
+    ExternalSignal,
+    StrategyRecommendation,
+    ImpactLedgerStrategy,
+    StrategyOS,
+    ChatMessage,
+)
+
+# FIXED — these live under services/oakfield
+from app.services.oakfield.copilot import CopilotService
+from app.services.oakfield.dashboard import DashboardService
+
+# Schemas (assuming schemas/meridian.py exists)
+from app.schemas.meridian import (
+    KPIResponse,
+    SignalResponse,
+    RecommendationResponse,
+    LedgerEntryResponse,
+    ChartDataPoint,
+)
+
 
 router = APIRouter()
 

@@ -2,7 +2,8 @@ import sys
 import subprocess
 import os
 from app.db.session import SessionLocal
-from app.services.meridian.seed_meridian import seed_meridian_story
+from app.services.oakfield.seed_meridian import seed_meridian_story
+
 
 def run_command(command):
     print(f"🚀 Running: {command}")
