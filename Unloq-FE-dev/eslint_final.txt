@@ -1,0 +1,24 @@
+
+> my-react-app@0.0.0 lint
+> eslint .
+
+
+D:\WORK\Freelancing\Unloq-FE-dev\src\context\AuthContext.tsx
+  17:14  error  Fast refresh only works when a file only exports components. Move your React context(s) to a separate file  react-refresh/only-export-components
+
+D:\WORK\Freelancing\Unloq-FE-dev\src\context\ThemeContext.tsx
+  15:14  error  Fast refresh only works when a file only exports components. Move your React context(s) to a separate file  react-refresh/only-export-components
+
+D:\WORK\Freelancing\Unloq-FE-dev\src\context\ToastContext.tsx
+  24:14  error  Fast refresh only works when a file only exports components. Move your React context(s) to a separate file  react-refresh/only-export-components
+
+D:\WORK\Freelancing\Unloq-FE-dev\src\hooks\useMeridianChat.ts
+  40:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\WORK\Freelancing\Unloq-FE-dev\src\lib\events.ts
+   1:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 7 problems (7 errors, 0 warnings)
+
