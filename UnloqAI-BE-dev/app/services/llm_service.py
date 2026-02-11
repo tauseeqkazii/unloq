@@ -303,4 +303,11 @@ class LLMService:
             raise e
 
 # Initialize Singleton
-llm_service = LLMService()
+# llm_service = LLMService()
+_llm_service = None
+
+def get_llm_service():
+    global _llm_service
+    if _llm_service is None:
+        _llm_service = LLMService()
+    return _llm_service

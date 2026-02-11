@@ -572,8 +572,8 @@ async def oakfield_strategist_chat(
     Streams a structured JSON analysis from the Oakfield Strategist AI.
     Queries only oakfield_* tables. No Meridian dependency.
     """
-    from app.services.oakfield.copilot import OakfieldCopilotService
-    service = OakfieldCopilotService(db)
+    from app.services.oakfield.copilot import CopilotService
+    service = CopilotService(db)
     return StreamingResponse(
         service.chat_completion(req.content),
         media_type="text/plain",

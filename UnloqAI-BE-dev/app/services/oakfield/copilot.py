@@ -9,8 +9,9 @@ from typing import Generator
 
 from sqlalchemy.orm import Session
 
-from app.services.llm_service import llm_service
+# from app.services.llm_service import llm_service
 from app.services.oakfield.tools import OakfieldTools
+from app.services.llm_service import get_llm_service
 
 
 # Intent keywords mapped to tool methods — used for dynamic dispatch
@@ -194,7 +195,9 @@ RESPONSE SCHEMA (JSON):
         # 3. Stream from LLM
         full_response = ""
         try:
-            for chunk in llm_service.stream_chat(messages):
+            llm = get_llm_service()
+
+            for chunk in llm.stream_chat(messages):
                 full_response += chunk
                 yield chunk
         except Exception as e:

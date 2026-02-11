@@ -104,7 +104,7 @@ async def send_message(
     db.commit()
 
     # 4. Initialize Service with Session Context
-    service = CopilotService(db, str(sid))
+    service = CopilotService(db)
     
     # 5. Auto-Title Generation (If it's the first message)
     # We do this in background to not block the stream
