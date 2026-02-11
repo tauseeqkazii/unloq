@@ -1,0 +1,174 @@
+# name: Deploy FastAPI to Lambda (DEV)
+
+# on:
+#   workflow_dispatch:
+#   push:
+#     branches:
+#       - dev
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       - name: Set up Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: '3.10'
+
+#       - name: Install dependencies
+#         run: |
+#           rm -rf lambda_package
+#           mkdir lambda_package
+#           python -m pip install --upgrade pip
+#           # Install all dependencies for the Lambda environment (manylinux)
+#           python -m pip install --target=lambda_package/ --platform manylinux2014_x86_64 --implementation cp --python-version 3.10 --only-binary=:all: --upgrade -r requirements.txt
+
+#       - name: Copy application code
+#         run: |
+#           cp -r app lambda_package/
+#           cp lambda_handler.py lambda_package/
+#           cp lambda_seed_handler.py lambda_package/
+#           cp bedrock_handler.py lambda_package/
+#           cp bedrock_contract_analyzer.py lambda_package/
+#           cp bedrock_oakfield_analyzer.py lambda_package/
+#           cp enable_pgvector.py lambda_package/
+#           cp seed_meridian.py lambda_package/
+
+#       - name: Create .env file from secrets
+#         run: |
+#           cat > lambda_package/.env << EOF
+#           DATABASE_URL=${{ secrets.DATABASE_URL }}
+#           API_KEY=${{ secrets.API_KEY }}
+#           SECRET_KEY=${{ secrets.SECRET_KEY }}
+#           LLM_PROVIDER=${{ secrets.LLM_PROVIDER }}
+#           LLM_MODEL=${{ secrets.LLM_MODEL }}
+#           AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+#           AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           AWS_REGION=${{ secrets.AWS_REGION }}
+#           DEBUG=False
+#           PROJECT_NAME=UnloqAI
+#           API_V1_STR=/api/v1
+#           BACKEND_CORS_ORIGINS=["https://platform.unloq.co","https://api.platform.unloq.co","http://localhost:3000","http://localhost:5173"]
+#           EOF
+
+#       - name: Create deployment package
+#         run: |
+#           cd lambda_package
+#           zip -r ../lambda-deployment.zip .
+#           cd ..
+
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v2
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: eu-west-2
+
+#       - name: Upload to S3
+#         run: |
+#           aws s3 cp lambda-deployment.zip s3://siaas-demo-docs-dev/lambda/lambda-deployment.zip
+
+#       - name: Update Lambda function
+#         run: |
+#           aws lambda update-function-code \
+#             --function-name UnloqAI-FastAPI-Backend \
+#             --s3-bucket siaas-demo-docs-dev \
+#             --s3-key lambda/lambda-deployment.zip \
+#             --region eu-west-2
+
+#       - name: Wait for Lambda update
+#         run: |
+#           aws lambda wait function-updated \
+#             --function-name UnloqAI-FastAPI-Backend \
+#             --region eu-west-2
+
+name: Deploy FastAPI to Lambda (DEV)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          rm -rf lambda_package
+          mkdir lambda_package
+          python -m pip install --upgrade pip
+          # Force Linux-compatible binaries
+          python -m pip install --target=lambda_package/ --platform manylinux2014_x86_64 --implementation cp --python-version 3.10 --only-binary=:all: --upgrade -r requirements.txt
+
+      - name: Copy application code
+        run: |
+          cp -r app lambda_package/
+          cp lambda_handler.py lambda_package/
+          # Copy optional modules
+          for file in lambda_seed_handler.py bedrock_handler.py bedrock_contract_analyzer.py \
+                      bedrock_oakfield_analyzer.py enable_pgvector.py seed_meridian.py; do
+            if [ -f "$file" ]; then cp "$file" lambda_package/; fi
+          done
+
+      - name: Ensure Python package structure
+        run: |
+          # Deep fix for package structure
+          cd lambda_package
+          touch __init__.py
+          find app -type d -exec touch {}/__init__.py \;
+          # Show folder structure for debugging if it fails again
+          ls -R app
+
+      - name: Create .env file from secrets
+        run: |
+          cat > lambda_package/.env << EOF
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          API_KEY=${{ secrets.API_KEY }}
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          LLM_PROVIDER=${{ secrets.LLM_PROVIDER }}
+          LLM_MODEL=${{ secrets.LLM_MODEL }}
+          DEBUG=False
+          PROJECT_NAME=UnloqAI
+          API_V1_STR=/api/v1
+          BACKEND_CORS_ORIGINS=["https://platform.unloq.co","https://api.platform.unloq.co","http://localhost:3000","http://localhost:5173"]
+          EOF
+
+      - name: Create deployment package
+        run: |
+          cd lambda_package && zip -r ../lambda-deployment.zip . && cd ..
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+
+      - name: Upload to S3
+        run: aws s3 cp lambda-deployment.zip s3://siaas-demo-docs-dev/lambda/lambda-deployment.zip
+
+      - name: Update Lambda function
+        run: |
+          aws lambda update-function-code \
+            --function-name UnloqAI-FastAPI-Backend \
+            --s3-bucket siaas-demo-docs-dev \
+            --s3-key lambda/lambda-deployment.zip \
+            --region eu-west-2
+
+      - name: Wait for Lambda update
+        run: aws lambda wait function-updated --function-name UnloqAI-FastAPI-Backend --region eu-west-2
